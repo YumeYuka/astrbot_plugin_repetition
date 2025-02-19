@@ -1,18 +1,58 @@
-from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
+from astrbot.api.event.filter import event_message_type, EventMessageType
+from astrbot.api.event import AstrMessageEvent
 from astrbot.api.star import Context, Star, register
-from astrbot.api import logger
+from astrbot.api.message_components import *
+from collections import defaultdict
+from typing import List
 
-@register("helloworld", "Your Name", "一个简单的 Hello World 插件", "1.0.0", "repo url")
-class MyPlugin(Star):
+@register("astrbot_plugin_repetition", "FengYing", "复读机插件", "1.0.0", "https://github.com/FengYing1314/astrbot_plugin_repetition")
+class RepetitionPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
-    
-    # 注册指令的装饰器。指令名为 helloworld。注册成功后，发送 `/helloworld` 就会触发这个指令，并回复 `你好, {user_name}!`
-    @filter.command("helloworld")
-    async def helloworld(self, event: AstrMessageEvent):
-        '''这是一个 hello world 指令''' # 这是 handler 的描述，将会被解析方便用户了解插件内容。建议填写。
-        user_name = event.get_sender_name()
-        message_str = event.message_str # 用户发的纯文本消息字符串
-        message_chain = event.get_messages() # 用户所发的消息的消息链 # from astrbot.api.message_components import *
-        logger.info(message_chain)
-        yield event.plain_result(f"Hello, {user_name}, 你发了 {message_str}!") # 发送一条纯文本消息
+        self.last_messages = defaultdict(list)
+        self.repeat_count = defaultdict(int)
+
+    def get_message_identifier(self, message) -> str:
+        """获取消息的唯一标识符"""
+        result = []
+        for msg in message:
+            if isinstance(msg, Image):
+                # 对于图片消息，使用文件名作为标识符
+                result.append(f"image:{msg.file}")
+            else:
+                result.append(str(msg))
+        return "".join(result)
+
+    def rebuild_message_chain(self, message) -> List:
+        """重建消息链，确保图片等媒体消息能正确发送"""
+        new_chain = []
+        for msg in message:
+            if isinstance(msg, Image):
+                # 对于图片消息，使用URL重新构建
+                new_chain.append(Image.fromURL(msg.url))
+            else:
+                new_chain.append(msg)
+        return new_chain
+
+    @event_message_type(EventMessageType.ALL)
+    async def on_message(self, event: AstrMessageEvent):
+        '''自动复读相同的消息'''
+        if event.message_str.startswith('/'):
+            return
+            
+        session_id = event.unified_msg_origin
+        current_message = event.message_obj.message
+        
+        if not current_message:
+            return
+        
+        message_id = self.get_message_identifier(current_message)
+        if message_id == self.last_messages[session_id]:
+            self.repeat_count[session_id] += 1
+            if self.repeat_count[session_id] == 1:
+                new_chain = self.rebuild_message_chain(current_message)
+                yield event.chain_result(new_chain)
+        else:
+            self.repeat_count[session_id] = 0
+            
+        self.last_messages[session_id] = message_id
