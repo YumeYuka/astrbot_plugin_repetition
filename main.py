@@ -38,7 +38,7 @@ class RepetitionPlugin(Star):
     @event_message_type(EventMessageType.ALL)
     async def on_message(self, event: AstrMessageEvent):
         '''自动复读相同的消息'''
-        if "/" in event.message_str:
+        if "/" in event.message_obj.message_str:
             return
             
         session_id = event.unified_msg_origin
