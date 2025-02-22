@@ -6,7 +6,7 @@ from collections import defaultdict
 from typing import List
 import random
 
-@register("astrbot_plugin_repetition", "FengYing", "复读机插件", "1.0.0", "https://github.com/FengYing1314/astrbot_plugin_repetition")
+@register("astrbot_plugin_repetition", "FengYing", "复读机插件", "1.0.1", "https://github.com/FengYing1314/astrbot_plugin_repetition")
 class RepetitionPlugin(Star):
     def __init__(self, context: Context):
         super().__init__(context)
