@@ -4,6 +4,7 @@ from astrbot.api.star import Context, Star, register
 from astrbot.api.message_components import *
 from collections import defaultdict
 from typing import List
+import random
 
 @register("astrbot_plugin_repetition", "FengYing", "复读机插件", "1.0.0", "https://github.com/FengYing1314/astrbot_plugin_repetition")
 class RepetitionPlugin(Star):
@@ -37,7 +38,7 @@ class RepetitionPlugin(Star):
     @event_message_type(EventMessageType.ALL)
     async def on_message(self, event: AstrMessageEvent):
         '''自动复读相同的消息'''
-        if event.message_str.startswith('/'):
+        if "/" in event.message_str:
             return
             
         session_id = event.unified_msg_origin
@@ -50,8 +51,12 @@ class RepetitionPlugin(Star):
         if message_id == self.last_messages[session_id]:
             self.repeat_count[session_id] += 1
             if self.repeat_count[session_id] == 1:
-                new_chain = self.rebuild_message_chain(current_message)
-                yield event.chain_result(new_chain)
+                # 修改为30%概率复读
+                if random.random() < 0.3:
+                    new_chain = self.rebuild_message_chain(current_message)
+                    yield event.chain_result(new_chain)
+                else:
+                    yield event.plain_result("打断施法！")
         else:
             self.repeat_count[session_id] = 0
             
