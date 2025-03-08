@@ -1,4 +1,4 @@
-from astrbot.api.event.filter import event_message_type, EventMessageType
+from astrbot.api.event.filter import event_message_type, EventMessageType, command
 from astrbot.api.event import AstrMessageEvent
 from astrbot.api.star import Context, Star, register
 from astrbot.api.message_components import *
@@ -15,17 +15,25 @@ class RepetitionPlugin(Star):
         self.disabled_groups = set()
         self.config = config
         
-    @event_message_type(EventMessageType.ALL)
-    async def on_command(self, event: AstrMessageEvent):
-        '''处理开关命令'''
-        if event.message_obj.message_str == "/repetition off":
-            if event.message_obj.group_id:
-                self.disabled_groups.add(event.message_obj.group_id)
-                yield event.plain_result("已在本群关闭复读功能")
-        elif event.message_obj.message_str == "/repetition on":
-            if event.message_obj.group_id:
-                self.disabled_groups.discard(event.message_obj.group_id)
-                yield event.plain_result("已在本群开启复读功能")
+    @command("repetition")
+    async def handle_repetition(self, event: AstrMessageEvent, operation: str = ""):
+        '''repetition 命令处理
+        
+        Args:
+            operation(string): on/off 开启或关闭复读功能
+        '''
+        if not event.message_obj.group_id:
+            yield event.plain_result("此命令仅在群聊中可用")
+            return
+            
+        if operation == "off":
+            self.disabled_groups.add(event.message_obj.group_id)
+            yield event.plain_result("已在本群关闭复读功能")
+        elif operation == "on":
+            self.disabled_groups.discard(event.message_obj.group_id)
+            yield event.plain_result("已在本群开启复读功能")
+        else:
+            yield event.plain_result("用法: /repetition [on|off]")
 
     def get_message_identifier(self, message) -> str:
         """获取消息的唯一标识符"""
