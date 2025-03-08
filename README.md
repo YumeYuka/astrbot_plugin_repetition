@@ -16,7 +16,7 @@
 
 - `/repetition on`: 在当前群开启复读功能
 - `/repetition off`: 在当前群关闭复读功能
-
+- `/repetition`: 查看帮助
 ## 配置项
 
 - `break_spell_probability`: 打断施法的触发概率（0-1之间，默认0.3）
