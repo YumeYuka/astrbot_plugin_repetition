@@ -1,0 +1,14 @@
+{
+    "break_spell_probability": {
+        "description": "打断施法的概率",
+        "type": "float",
+        "hint": "设置打断施法的触发概率，范围0-1，默认0.3",
+        "default": 0.3
+    },
+    "break_spell_text": {
+        "description": "打断施法的文本",
+        "type": "string",
+        "hint": "设置打断施法时发送的文本内容",
+        "default": "打断施法！"
+    }
+}
