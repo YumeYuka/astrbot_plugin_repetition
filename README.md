@@ -41,7 +41,7 @@
 
 ## 关于
 
-- 作者：FengYing
+- 作者：FengYing YumeYuka
 - 版本：1.0.2
 - 项目地址：https://github.com/FengYing1314/astrbot_plugin_repetition
 
